@@ -23,7 +23,7 @@ FILE *open_file(char *name) {
   year = local->tm_year + 1900;  // get year since 1900
 
   sprintf(date, "%d-%d-%d", day, month, year);
-  sprintf(path, "log-%s-%s.txt", name, date);
+  sprintf(path, "log-%s-%s.log.txt", name, date);
 
   return fopen(path, "a");
 }

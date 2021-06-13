@@ -47,7 +47,7 @@ FILE *open_file() {
   year = local->tm_year + 1900;  // get year since 1900
 
   sprintf(date, "%d-%d-%d", day, month, year);
-  sprintf(path, "log-%s.txt", date);
+  sprintf(path, "log-%s.log.txt", date);
 
   return fopen(path, "a");
 }
