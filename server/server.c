@@ -19,7 +19,7 @@
 
 static _Atomic unsigned int cli_count = 0;
 static int uid = 10;
-static int mode = 0;  // 0: timestamp di invio, 1: timestamp di ricezione
+static int mode = 0;  // 0: timestamp di ricezione, 1: timestamp di invio
 
 /* Struttura dati per memorizzare un client */
 typedef struct {
@@ -87,7 +87,7 @@ void send_message(char *s, int uid) {
       if (clients[i]->uid != uid) {  // Se l'uid non corrisponde al mittente
         if (write(clients[i]->sockfd, s, strlen(s)) <
             0) {  // Invia il messaggio sulla socket del client
-          perror("ERROR: write to descriptor failed");
+          perror("[ERROR]: Impossibile inviare il messaggio.");
           break;
         }
       }
@@ -132,8 +132,6 @@ void *handle_client(void *arg) {
                        0);  // Riceve un messaggio e lo memorizza nel buffer
     if (receive > 0) {
       if (strlen(buff_out) > 0) {
-        // send_message(buff_out, cli->uid);  // Inoltra il messaggio tranne che
-        // al mittente
         char *message = calloc(2048, sizeof(char));
         long int timestamp;
 
@@ -148,17 +146,6 @@ void *handle_client(void *arg) {
         push(&messages, message, cli->uid, name, timestamp);
 
         pthread_mutex_unlock(&messages_mutex);  // Rilascia la lock
-
-        // message *msg = malloc(sizeof(message));
-
-        // char subbuff[5];
-        // memcpy(msg->message, &buff_out[6], BUFFER_SZ - 6);
-        // subbuff[4] = '\0';
-
-        // strcpy(msg->message, buff_out);
-        // msg->receiver_timestamp = (int)time(NULL);
-        // msg->client_uid = cli->uid;
-        // messages_queue_new(msg);
 
         str_trim_lf(buff_out, strlen(buff_out));
         printf("%s: %s\n", name, message);
@@ -194,7 +181,7 @@ void *handle_send_message(void *arg) {
     pthread_mutex_lock(&messages_mutex);  // Acquisisce la lock
     if (!isEmpty(&messages)) {
       bzero(message, BUFFER_SZ + 35);
-      sprintf(message, "%s> %s\n", messages->user_name, messages->message);
+      sprintf(message, "%s: %s\n", messages->user_name, messages->message);
       send_message(message, messages->uid);
       pop(&messages);
     }
@@ -237,7 +224,7 @@ int main(int argc, char **argv) {
 
   if (setsockopt(listenfd, SOL_SOCKET, (SO_REUSEPORT | SO_REUSEADDR),
                  (char *)&option, sizeof(option)) < 0) {
-    perror("ERROR: setsockopt failed");
+    perror("[ERRORe]: Impossibile impostare le opzioni della socket.");
     return EXIT_FAILURE;
   }
 
