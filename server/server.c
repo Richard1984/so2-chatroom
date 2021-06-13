@@ -97,67 +97,6 @@ void send_message(char *s, int uid) {
   pthread_mutex_unlock(&clients_mutex);  // Rilascia la lock
 }
 
-// /* Aggiunge un messaggio alla coda */
-// void messages_queue_add(message *message) {
-//   pthread_mutex_lock(&messages_mutex);  // Acquisisce la lock
-
-//   for (int i = 0; i < MAX_CLIENTS; ++i) {
-//     if (!messages[i]) {
-//       messages[i] = message;  // Aggiunge un cliente in coda
-//       break;
-//     }
-//   }
-
-//   pthread_mutex_unlock(&messages_mutex);  // Rilascia la lock
-// }
-
-// /* Rimuove un messaggio dalla coda */
-// void messages_queue_remove() {
-//   pthread_mutex_lock(&messages_mutex);  // Acquisisce la lock
-//   int max_timestamp = 0, max_index = -1;
-
-//   for (int i = 0; i < MESSAGES_QUEUE_SIZE; ++i) {
-//     if (messages[i] && messages[i]->receiver_timestamp > max_timestamp) {
-//       max_timestamp = messages[i]->receiver_timestamp;
-//       max_index = i;
-//     }
-//   }
-
-//   if (max_index != -1) {
-//     send_message(messages[max_index]->message,
-//     messages[max_index]->client_uid); free(messages[max_index]);
-//     messages[max_index] = NULL;
-//   }
-
-//   pthread_mutex_unlock(&messages_mutex);  // Rilascia la lock
-// }
-
-// /* Rimuove un messaggio dalla coda */
-// void messages_queue_new(message *message) {
-//   pthread_mutex_lock(&messages_mutex);  // Acquisisce la lock
-//   int max_timestamp = 0, max_index = -1;
-
-//   for (int i = 0; i < MESSAGES_QUEUE_SIZE; ++i) {
-//     if (messages[i] && messages[i]->receiver_timestamp > max_timestamp) {
-//       max_timestamp = messages[i]->receiver_timestamp;
-//       max_index = i;
-//     }
-//   }
-
-//   if (max_index != -1 &&
-//       messages[max_index]->receiver_timestamp > message->receiver_timestamp)
-//       {
-//     send_message(messages[max_index]->message,
-//     messages[max_index]->client_uid); free(messages[max_index]);
-//     messages[max_index] = message;
-//   } else {
-//     send_message(message->message, message->client_uid);
-//     free(message);
-//   }
-
-//   pthread_mutex_unlock(&messages_mutex);  // Rilascia la lock
-// }
-
 /* La funzione gestisce le interazione del server con il client */
 void *handle_client(void *arg) {
   char buff_out[BUFFER_SZ];               // Buffer di output sul server
@@ -279,8 +218,7 @@ int main(int argc, char **argv) {
   mode = atoi(argv[2]);
 
   if (mode != 0 && mode != 1) {
-    printf(
-        "MODALITÀ: \n 0) Timestamp del server.\n1) Timebstamp del client.\n");
+    printf("MODALITÀ:\n0) Timestamp del server.\n1) Timestamp del client.\n");
     return EXIT_FAILURE;
   }
   int option = 1, listenfd = 0, connfd = 0;

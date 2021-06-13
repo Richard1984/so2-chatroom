@@ -25,9 +25,9 @@ void print_client_addr(struct sockaddr_in addr) {
          (addr.sin_addr.s_addr & 0xff000000) >> 24);
 }
 
-#include <stdio.h>
-#include <time.h>
-
+/**
+ * Apre il file di log (relativo alla data) in modalita' append
+ */
 FILE *open_file() {
   char date[10];
   int day, month, year;
@@ -55,15 +55,19 @@ FILE *open_file() {
   return fopen(path, "a");
 }
 
+/**
+ * Restituisce l'ora attuale in millisecondi
+ */
 long get_current_time(void) {
-  long ms;   // Milliseconds
-  time_t s;  // Seconds
-  struct timespec spec;
+  long milliseconds;     // Millisecondi
+  time_t seconds;        // Secondi
+  struct timespec spec;  // Struttura timestamp con nanosecondi
 
-  clock_gettime(CLOCK_REALTIME, &spec);
+  clock_gettime(CLOCK_REALTIME, &spec);  // Legge il tempo corrente
 
-  s = spec.tv_sec;
-  ms = round(spec.tv_nsec / 1.0e6);  // Convert nanoseconds to milliseconds
+  seconds = spec.tv_sec;
+  milliseconds =
+      round(spec.tv_nsec / 1.0e6);  // Converte i nanosecondi in millisecondi
 
-  return (long)s * 1000 + ms;
+  return (long)seconds * 1000 + milliseconds;
 }
