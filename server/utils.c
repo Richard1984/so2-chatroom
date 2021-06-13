@@ -1,5 +1,8 @@
+#include <inttypes.h>
+#include <math.h>
 #include <netinet/in.h>
 #include <stdio.h>
+#include <time.h>
 
 void str_overwrite_stdout() {
   printf("\r%s", "> ");
@@ -50,4 +53,17 @@ FILE *open_file() {
   sprintf(path, "log-%s.log.txt", date);
 
   return fopen(path, "a");
+}
+
+long get_current_time(void) {
+  long ms;   // Milliseconds
+  time_t s;  // Seconds
+  struct timespec spec;
+
+  clock_gettime(CLOCK_REALTIME, &spec);
+
+  s = spec.tv_sec;
+  ms = round(spec.tv_nsec / 1.0e6);  // Convert nanoseconds to milliseconds
+
+  return (long)s * 1000 + ms;
 }

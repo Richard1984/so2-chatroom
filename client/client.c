@@ -39,7 +39,7 @@ void catch_ctrl_c_and_exit(int sig) { flag = 1; }
 
 void send_msg_handler() {
   char message[LENGTH] = {};
-  char buffer[LENGTH + 34] = {};
+  char buffer[LENGTH + sizeof(long int)] = {};
 
   fp = open_file(name);
 
@@ -51,13 +51,13 @@ void send_msg_handler() {
     if (strcmp(message, "exit") == 0) {
       break;
     } else {
-      sprintf(buffer, "%s: %s\n", name, message);
+      sprintf(buffer, "%s:%ld", message, get_current_time());
       fprintf(fp, "%s: %s\n", name, message);  // Log nel file
       send(sockfd, buffer, strlen(buffer), 0);
     }
 
     bzero(message, LENGTH);
-    bzero(buffer, LENGTH + 32);
+    bzero(buffer, LENGTH + sizeof(long int));
   }
   fclose(fp);
   catch_ctrl_c_and_exit(2);

@@ -1,3 +1,7 @@
+#define _POSIX_C_SOURCE 200809L
+
+#include <inttypes.h>
+#include <math.h>
 #include <stdio.h>
 #include <time.h>
 
@@ -26,4 +30,17 @@ FILE *open_file(char *name) {
   sprintf(path, "log-%s-%s.log.txt", name, date);
 
   return fopen(path, "a");
+}
+
+long get_current_time(void) {
+  long ms;   // Milliseconds
+  time_t s;  // Seconds
+  struct timespec spec;
+
+  clock_gettime(CLOCK_REALTIME, &spec);
+
+  s = spec.tv_sec;
+  ms = round(spec.tv_nsec / 1.0e6);  // Convert nanoseconds to milliseconds
+
+  return (long)s * 1000 + ms;
 }

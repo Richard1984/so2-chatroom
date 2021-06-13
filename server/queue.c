@@ -8,17 +8,19 @@
 typedef struct node {
   char* message;
   char* user_name;
+  int uid;
 
   // Lower values indicate higher priority
-  int priority;
+  long int priority;
 
   struct node* next;
 
 } Node;
 
 // Function to Create A New Node
-Node* newNode(char* message, char* user_name, int priority) {
+Node* newNode(char* message, int uid, char* user_name, long int priority) {
   Node* temp = malloc(sizeof(Node));
+  temp->uid = uid;
   temp->message = message;
   temp->user_name = user_name;
   temp->priority = priority;
@@ -28,7 +30,9 @@ Node* newNode(char* message, char* user_name, int priority) {
 }
 
 // Return the value at head
-int peek(Node** head) { return (*head)->message; }
+char* peek(Node** head) {
+  return strcat((*head)->user_name, strcat("> ", (*head)->message));
+}
 
 // Removes the element with the
 // highest priority form the list
@@ -38,12 +42,16 @@ void pop(Node** head) {
   free(temp);
 }
 
+// Function to check is list is empty
+int isEmpty(Node** head) { return (*head) == NULL; }
+
 // Function to push according to priority
-void push(Node** head, char* message, char* user_name, int priority) {
+void push(Node** head, char* message, int uid, char* user_name,
+          long int priority) {
   Node* start = (*head);
 
   // Create new Node
-  Node* temp = newNode(message, user_name, priority);
+  Node* temp = newNode(message, uid, user_name, priority);
 
   if (isEmpty(head)) {
     (*head) = temp;
@@ -70,9 +78,6 @@ void push(Node** head, char* message, char* user_name, int priority) {
     start->next = temp;
   }
 }
-
-// Function to check is list is empty
-int isEmpty(Node** head) { return (*head) == NULL; }
 
 // Driver code
 // int main() {
