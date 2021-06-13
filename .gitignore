@@ -1,5 +1,4 @@
-client/*.txt
-server/*.txt
+*.log.txt
 
 # Prerequisites
 *.d
