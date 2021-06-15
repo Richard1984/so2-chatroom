@@ -68,13 +68,18 @@ void recv_msg_handler() {
 
 int main(int argc, char **argv) {
     /* Se non sono forniti i parametri richiesti genera errore. */
-    if (argc != 2) {
-        printf("Utilizzo: %s <port>\n", argv[0]);
+    if (argc != 3) {
+        printf("Utilizzo: %s <address> <port>\n", argv[0]);
         return EXIT_FAILURE;
     }
 
-    char *ip = "127.0.0.1";    // Indirizzo remoto del server
-    int port = atoi(argv[1]);  // Legge la porta e la converte in intero
+    char *ip = argv[1];        // Legge l'indirizzo del server
+    int port = atoi(argv[2]);  // Legge la porta e la converte in intero
+
+    if (inet_addr(ip) == -1) {
+        printf("[ERRORE]: L'indirizzo del server non è valido.\n");
+        return EXIT_FAILURE;
+    }
 
     signal(SIGINT, catch_ctrl_c_and_exit);  // Viene catturato il Ctrl+C
 
