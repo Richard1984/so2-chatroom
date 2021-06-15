@@ -14,11 +14,12 @@ La chatroom è composta da due programmi distinti, il client e il server:
 Il server viene avviato con il seguente comando:
 
 ```bash
-$ ./server <porta> <modalità>
+$ ./server <porta> <modalità> <wait>
 ```
 
 La porta verrà utilizzata dal server per definire la socket.
 La modalità definisce l'ordine con cui vengono inoltrati i messaggi ricevuti dai client. Le modalità sono due:
+Il wait definisce la durata della finestra. Se la modalità è zero viene ignorata. Se la modalita è uno ma non viene fornito, viene impostato a 5 secondi.
 
 1. 0: Il server inoltra i messaggi nell'ordine in cui sono arrivati.
 2. 1: Il server inoltra i messaggi ordinandoli in base al timestamp di invio del client.
@@ -88,6 +89,12 @@ Avviare il server (esempio):
 
 ```bash
 $ ./server 4000 0
+```
+
+Avviare il server con wait (esempio):
+
+```bash
+$ ./server 4000 1 2
 ```
 
 Avviare il client (esempio):
