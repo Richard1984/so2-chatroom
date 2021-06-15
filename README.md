@@ -50,7 +50,7 @@ Dopo aver effettuato la connessione viene chiesto all'utente di inserire un nick
 Il formato adoperato dal client per l'invio del messaggio è il seguente:
 
 ```
-<messaggioo>:<timestamp>
+<messaggio>:<timestamp>
 ```
 
 Il timestamp è espresso in millisecondi (e non in secondi per garantire un ordinamento più preciso).
