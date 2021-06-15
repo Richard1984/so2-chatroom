@@ -28,6 +28,14 @@ Il messsaggio con timestamp più alto ha priorità più bassa e quindi verrà in
 Nel caso in cui lo modalità sia la 0, il timestamp viene generato sul server alla ricezione del messaggio, ma il meccanismo è lo stesso.
 Nel caso in cui lo modalità sia la 1, viene creata una finestra di ricezione di 5 secondi, durante la quale vengono ricevuti i messaggi e mantenuti ordinati.
 
+### Log
+Quando si avvia una chat, viene generato un file con il seguente formato: 
+```
+log-<giorno>-<mese>-<anno>.log.txt
+```
+
+Il log identifica una sessione di chat in uno specifico giorno. Quindi per più sessioni di chat durante la stessa giornata, i messaggi verranno salvati sul medesimo file.
+
 ## Client
 Il client si connette al server sulla porta specificata con il seguente comando:
 
@@ -43,3 +51,11 @@ Il formato adoperato per l'invio del messaggio è il seguente:
 ```
 
 Il timestamp è espresso in millisecondi.
+
+### Log
+Quando si avvia una chat, viene generato un file con il seguente formato: 
+```
+log-<nickname>-<giorno>-<mese>-<anno>.log.txt
+```
+
+Il log identifica una sessione di chat di uno specifico utente in uno specifico giorno. Quindi se si utilizza lo stesso nickname durante la stessa giornata, i messaggi verranno salvati sul medesimo file.
