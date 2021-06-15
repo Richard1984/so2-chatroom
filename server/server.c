@@ -128,7 +128,7 @@ void *handle_client(void *arg) {
                 push(&messages, message, cli->uid, name, timestamp);  // Aggiunge il messaggio in coda
                 pthread_mutex_unlock(&messages_mutex);                // Rilascia la lock
 
-                str_trim_lf(buff_out, strlen(buff_out));
+                string_remove_newline(buff_out);
                 printf("%s: %s\n", name, message);
             }
         } else if (receive == 0 || strcmp(buff_out, "exit") == 0) {

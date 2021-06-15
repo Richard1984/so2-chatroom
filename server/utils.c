@@ -9,13 +9,9 @@ void str_overwrite_stdout() {
     fflush(stdout);
 }
 
-void str_trim_lf(char *arr, int length) {
-    for (int i = 0; i < length; i++) {  // trim \n
-        if (arr[i] == '\n') {
-            arr[i] = '\0';
-            break;
-        }
-    }
+/* Rimuove il carattere newline da una stringa */
+void string_remove_newline(char *string) {
+    string[strcspn(string, "\n")] = '\0';
 }
 
 /**
@@ -29,10 +25,7 @@ FILE *open_file() {
 
     time(&now);  // Ritorna l'ora attuale del sistema e lal memorizza in now
 
-    // localtime converts a `time_t` value to calendar time and
-    // returns a pointer to a `tm` structure with its members
-    // filled with the corresponding values
-    struct tm *local = localtime(&now);
+    struct tm *local = localtime(&now);  // Legge l'ora e la converte in una struttura "calendario" locale
 
     day = local->tm_mday;          // get day of month (1 to 31)
     month = local->tm_mon + 1;     // get month of year (0 to 11)

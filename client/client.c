@@ -18,21 +18,7 @@ volatile sig_atomic_t flag = 0;
 int sockfd = 0;
 char name[32];
 
-FILE *fp;
-
-void str_overwrite_stdout() {
-    printf("%s", "> ");
-    fflush(stdout);
-}
-
-void str_trim_lf(char *arr, int length) {
-    for (int i = 0; i < length; i++) {  // trim \n
-        if (arr[i] == '\n') {
-            arr[i] = '\0';
-            break;
-        }
-    }
-}
+FILE *log_fp;
 
 void catch_ctrl_c_and_exit(int sig) { flag = 1; }
 
@@ -40,28 +26,26 @@ void send_msg_handler() {
     char message[LENGTH] = {};
     char buffer[LENGTH + sizeof(long int)] = {};
 
-    fp = open_file(name);  // Apre il file di log
+    log_fp = open_file(name);  // Apre il file di log
 
     while (1) {
         str_overwrite_stdout();
         fgets(message, LENGTH, stdin);  // Legge l'input
-        // system("clear");
-        str_trim_lf(message, LENGTH);
+        // system("clear"); // Utile nella modalita' 1 per evitare che il messaggio inviato si mischi con quelli ricevuti
+        string_remove_newline(message);
 
-        if (strcmp(message, "exit") ==
-            0) {  // Se l'utente digita exit, la chat viene interrotta
+        if (strcmp(message, "exit") == 0) {  // Se l'utente digita exit, la chat viene interrotta
             break;
         } else {
-            sprintf(buffer, "%s:%ld", message,
-                    get_current_time());              // Formatta il messaggio testo:timestamp
-            fprintf(fp, "%s: %s\n", name, message);   // Aggiunge il log nel file
-            send(sockfd, buffer, strlen(buffer), 0);  // Invia il messaggio al server
+            sprintf(buffer, "%s:%ld", message, get_current_time());  // Formatta il messaggio testo:timestamp
+            fprintf(log_fp, "%s: %s\n", name, message);              // Aggiunge il log nel file
+            send(sockfd, buffer, strlen(buffer), 0);                 // Invia il messaggio al server
         }
 
         bzero(message, LENGTH);
         bzero(buffer, LENGTH + sizeof(long int));
     }
-    fclose(fp);
+    fclose(log_fp);
     catch_ctrl_c_and_exit(2);
 }
 
@@ -95,14 +79,14 @@ int main(int argc, char **argv) {
 
     printf("Inserisci il tuo nome: ");
     fgets(name, 32, stdin);
-    str_trim_lf(name, strlen(name));
+    string_remove_newline(name);
 
     if (strlen(name) > 32 || strlen(name) < 2) {
         printf("La lunghezza del nome deve essere compresa tra i 2 e i 30 caratteri.\n");
         return EXIT_FAILURE;
     }
 
-    struct sockaddr_in server_addr;
+    struct sockaddr_in server_addr;  // Socket del server
 
     /* Impostazione della socket */
     sockfd = socket(AF_INET, SOCK_STREAM, 0);

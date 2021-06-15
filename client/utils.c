@@ -12,14 +12,11 @@ FILE *open_file(char *name) {
     char date[10];
     int day, month, year;
     char path[50];
-    time_t now;  // tipo temporale, che consente di svolgeri calcoli aritmetici
+    time_t now;  // Tipo temporale, che consente di svolgeri calcoli aritmetici
 
     time(&now);  // Ritorna l'ora attuale del sistema e lal memorizza in now
 
-    // localtime converts a `time_t` value to calendar time and
-    // returns a pointer to a `tm` structure with its members
-    // filled with the corresponding values
-    struct tm *local = localtime(&now);
+    struct tm *local = localtime(&now);  // Legge l'ora e la converte in una struttura "calendario" locale
 
     day = local->tm_mday;          // restituisce il giorno del mese associato alla data (1 to 31)
     month = local->tm_mon + 1;     // restituisce il mese dell'anno associato alla data (0 to 11) + 1 (mesi da 1 a 12)
@@ -45,4 +42,15 @@ long get_current_time(void) {
     milliseconds = round(spec.tv_nsec / 1.0e6);  // Converte i nanosecondi in millisecondi
 
     return (long)seconds * 1000 + milliseconds;
+}
+
+/* Rimuove il carattere newline da una stringa */
+void string_remove_newline(char *string) {
+    string[strcspn(string, "\n")] = '\0';
+}
+
+/* Predispone il "layout" per l'inserimento del messaggio */
+void str_overwrite_stdout() {
+    printf("%s", "> ");
+    fflush(stdout);  // Pulisce il buffer
 }
