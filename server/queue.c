@@ -26,6 +26,7 @@ Node* newNode(char* message, int uid, char* user_name, long int priority) {
 void pop(Node** head) {
     Node* temp = *head;       // Indirizzo dell'area puntata da head
     (*head) = (*head)->next;  // Sostituisce il primo con il successivo al primo
+    free(temp->message);      // Libera la memoria del messaggio
     free(temp);               // Libera la memoria precedentemente puntata da head
 }
 

@@ -126,10 +126,10 @@ void *handle_client(void *arg) {
                 pthread_mutex_lock(&messages_mutex);                  // Acquisisce la lock
                 if (mode == 0) timestamp = get_current_time();        // Se la modalità è la zero viene utilizzato un timestamp generato dal server
                 push(&messages, message, cli->uid, name, timestamp);  // Aggiunge il messaggio in coda
+                printf("%s: %s\n", name, message);                    // Stampa il messaggio
                 pthread_mutex_unlock(&messages_mutex);                // Rilascia la lock
 
                 string_remove_newline(buff_out);
-                printf("%s: %s\n", name, message);
             }
         } else if (receive == 0 || strcmp(buff_out, "exit") == 0) {
             sprintf(buff_out, "%s ha lasciato la chat.\n", cli->name);
