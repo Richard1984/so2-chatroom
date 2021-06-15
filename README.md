@@ -74,3 +74,24 @@ I test sono stati effettuati con una finestra superiore ai 5 secondi, per potern
 
 ### Log dei messaggi
 Per verificare il corretto funzionamento dei log è stata avviata una sessione di chat con diversi utenti, al termine della quale sono stati effettivamente creati i log server e client .
+
+## Struttura del codice, compilazione ed esecuzione
+
+Il progetto è monorepo, organizzato in due cartelle: *client* e *server*.
+Nella cartella principale è presente un Makefile globale che permette di compilare sia client che server (un Makefile per ogni cartella).
+
+```bash
+$ make
+```
+
+Avviare il server (esempio):
+
+```bash
+$ ./server 4000 0
+```
+
+Avviare il client (esempio):
+
+```bash
+$ ./client 127.0.0.1 4000
+```
