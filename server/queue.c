@@ -1,97 +1,67 @@
-
-// C code to implement Priority Queue
-// using Linked List
 #include <stdio.h>
 #include <stdlib.h>
 
-// Node
+/* Nodo */
 typedef struct node {
-  char* message;
-  char* user_name;
-  int uid;
-
-  // Lower values indicate higher priority
-  long int priority;
-
-  struct node* next;
-
+    char* message;
+    char* user_name;
+    int uid;
+    long int priority;  // Un valore piu' basso indica una priorita' piu' alta
+    struct node* next;
 } Node;
 
-// Function to Create A New Node
+/* Crea un nuovo nodo */
 Node* newNode(char* message, int uid, char* user_name, long int priority) {
-  Node* temp = malloc(sizeof(Node));
-  temp->uid = uid;
-  temp->message = message;
-  temp->user_name = user_name;
-  temp->priority = priority;
-  temp->next = NULL;
+    Node* temp = malloc(sizeof(Node));  // Alloca la memoria per il nodo
+    temp->uid = uid;
+    temp->message = message;
+    temp->user_name = user_name;
+    temp->priority = priority;
+    temp->next = NULL;  // Imposta il successivo a NULL
 
-  return temp;
+    return temp;
 }
 
-// Return the value at head
-char* peek(Node** head) {
-  return strcat((*head)->user_name, strcat("> ", (*head)->message));
-}
-
-// Removes the element with the
-// highest priority form the list
+/* Rimuove l'elemento con la priorita' piu' alta dalla coda */
 void pop(Node** head) {
-  Node* temp = *head;
-  (*head) = (*head)->next;
-  free(temp);
+    Node* temp = *head;       // Indirizzo dell'area puntata da head
+    (*head) = (*head)->next;  // Sostituisce il primo con il successivo al primo
+    free(temp);               // Libera la memoria precedentemente puntata da head
 }
 
-// Function to check is list is empty
-int isEmpty(Node** head) { return (*head) == NULL; }
+/* Verifica se la coda sia vuota */
+int isEmpty(Node** head) {
+    return (*head) == NULL;
+}
 
-// Function to push according to priority
-void push(Node** head, char* message, int uid, char* user_name,
-          long int priority) {
-  Node* start = (*head);
+/* Inserisce un nodo nella coda in base alla priorita' */
+void push(Node** head, char* message, int uid, char* user_name, long int priority) {
+    Node* start = (*head);
 
-  // Create new Node
-  Node* temp = newNode(message, uid, user_name, priority);
+    // Crea un nuovo nodo
+    Node* temp = newNode(message, uid, user_name, priority);
 
-  if (isEmpty(head)) {
-    (*head) = temp;
-    return;
-  }
-
-  // Special Case: The head of list has lesser
-  // priority than new node. So insert new
-  // node before head node and change head node.
-  if ((*head)->priority > priority) {
-    // Insert New Node before head
-    temp->next = *head;
-    (*head) = temp;
-  } else {
-    // Traverse the list and find a
-    // position to insert new node
-    while (start->next != NULL && start->next->priority < priority) {
-      start = start->next;
+    if (isEmpty(head)) {
+        (*head) = temp;  // Se la coda e' vuota lo inserisci per primo
+        return;
     }
 
-    // Either at the ends of the list
-    // or at required position
-    temp->next = start->next;
-    start->next = temp;
-  }
+    /** La "testa" della coda ha un valore di priorita' piu' basso del nuovo nodo,
+     * quindi il nuovo nodo viene inserito per primo e la "testa" viene usato 
+     * come "next" nodo. 
+     * */
+    if ((*head)->priority > priority) {
+        // Inserisce il nuovo nodo prima di head
+        temp->next = *head;
+        (*head) = temp;
+    } else {
+        // Attaraversa la coda e trova il post con la priorita' adatta, altrimenti lo inserisci alla fine
+        while (start->next != NULL && start->next->priority < priority) {
+            start = start->next;
+        }
+
+        // Viene inserito il nuovo nella posizione trovata (eventualmente la fine della coda)
+        temp->next = start->next;
+        start->next = temp;
+    }
 }
-
-// Driver code
-// int main() {
-//   // Create a Priority Queue
-//   // 7->4->5->6
-//   Node* pq = newNode(4, 1);
-//   push(&pq, 5, 2);
-//   push(&pq, 6, 3);
-//   push(&pq, 7, 0);
-
-//   while (!isEmpty(&pq)) {
-//     printf("%d ", peek(&pq));
-//     pop(&pq);
-//   }
-
-//   return 0;
-// }
