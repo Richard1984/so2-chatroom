@@ -31,7 +31,7 @@ void send_msg_handler() {
     while (1) {
         str_overwrite_stdout();
         fgets(message, LENGTH, stdin);  // Legge l'input
-        // system("clear"); // Utile nella modalita' 1 per evitare che il messaggio inviato si mischi con quelli ricevuti
+        // system("clear"); // Utile nella modalità 1 per evitare che il messaggio inviato si mischi con quelli ricevuti
         string_remove_newline(message);
 
         if (strcmp(message, "exit") == 0) {  // Se l'utente digita exit, la chat viene interrotta
@@ -59,7 +59,7 @@ void recv_msg_handler() {
         } else if (receive == 0) {
             break;
         } else {
-            // Si e' verificato un errore
+            // Si è verificato un errore
         }
         memset(message, 0, sizeof(message));
     }

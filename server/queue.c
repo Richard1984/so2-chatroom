@@ -6,7 +6,7 @@ typedef struct node {
     char* message;
     char* user_name;
     int uid;
-    long int priority;  // Un valore piu' basso indica una priorita' piu' alta
+    long int priority;  // Un valore più basso indica una priorità più alta
     struct node* next;
 } Node;
 
@@ -22,7 +22,7 @@ Node* newNode(char* message, int uid, char* user_name, long int priority) {
     return temp;
 }
 
-/* Rimuove l'elemento con la priorita' piu' alta dalla coda */
+/* Rimuove l'elemento con la priorità più alta dalla coda */
 void pop(Node** head) {
     Node* temp = *head;       // Indirizzo dell'area puntata da head
     (*head) = (*head)->next;  // Sostituisce il primo con il successivo al primo
@@ -34,7 +34,7 @@ int isEmpty(Node** head) {
     return (*head) == NULL;
 }
 
-/* Inserisce un nodo nella coda in base alla priorita' */
+/* Inserisce un nodo nella coda in base alla priorità */
 void push(Node** head, char* message, int uid, char* user_name, long int priority) {
     Node* start = (*head);
 
@@ -42,11 +42,11 @@ void push(Node** head, char* message, int uid, char* user_name, long int priorit
     Node* temp = newNode(message, uid, user_name, priority);
 
     if (isEmpty(head)) {
-        (*head) = temp;  // Se la coda e' vuota lo inserisci per primo
+        (*head) = temp;  // Se la coda è vuota lo inserisci per primo
         return;
     }
 
-    /** La "testa" della coda ha un valore di priorita' piu' basso del nuovo nodo,
+    /** La "testa" della coda ha un valore di priorità più basso del nuovo nodo,
      * quindi il nuovo nodo viene inserito per primo e la "testa" viene usato 
      * come "next" nodo. 
      * */
@@ -55,7 +55,7 @@ void push(Node** head, char* message, int uid, char* user_name, long int priorit
         temp->next = *head;
         (*head) = temp;
     } else {
-        // Attaraversa la coda e trova il post con la priorita' adatta, altrimenti lo inserisci alla fine
+        // Attaraversa la coda e trova il post con la priorità adatta, altrimenti lo inserisci alla fine
         while (start->next != NULL && start->next->priority < priority) {
             start = start->next;
         }

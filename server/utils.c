@@ -15,7 +15,7 @@ void string_remove_newline(char *string) {
 }
 
 /**
- * Apre il file di log (relativo alla data) in modalita' append
+ * Apre il file di log (relativo alla data) in modalità append
  */
 FILE *open_file() {
     char date[10];

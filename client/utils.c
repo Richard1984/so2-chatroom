@@ -6,7 +6,7 @@
 #include <time.h>
 
 /**
- * Apre il file di log (relativo all'utente e alla data) in modalita' append
+ * Apre il file di log (relativo all'utente e alla data) in modalità append
  */
 FILE *open_file(char *name) {
     char date[10];

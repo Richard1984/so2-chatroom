@@ -74,7 +74,7 @@ void send_message(char *s, int uid) {
     fprintf(fp, "%s\n", s);  // Salva il messaggio nel log
 
     for (int i = 0; i < MAX_CLIENTS; ++i) {
-        if (clients[i]) {                                           // Se nella posizione il client non e' NULL
+        if (clients[i]) {                                           // Se nella posizione il client non è NULL
             if (clients[i]->uid != uid) {                           // Se l'uid non corrisponde al mittente
                 if (write(clients[i]->sockfd, s, strlen(s)) < 0) {  // Invia il messaggio sulla socket del client
                     perror("[ERROR]: Impossibile inviare il messaggio.");
@@ -91,29 +91,29 @@ void send_message(char *s, int uid) {
 void *handle_client(void *arg) {
     char buff_out[BUFFER_SZ];                            // Buffer di output sul server
     char *name = calloc(NICKNAME_LENGTH, sizeof(char));  // Nickname temporaneo del client
-    int leave_flag = 0;                                  // Flag di validita' del client
+    int leave_flag = 0;                                  // Flag di validità del client
 
     cli_count++;                  // Incrementa il contatore dei client
     client *cli = (client *)arg;  // Genera una nuova struttura client
 
     /**
-   * Riceve il nickname dal client e lo rifiuta se c'e' un errore o se il
-   * nickname non e' compreso tra i 2 e i NICKNAME_LENGTH caratteri
+   * Riceve il nickname dal client e lo rifiuta se c'è un errore o se il
+   * nickname non è compreso tra i 2 e i NICKNAME_LENGTH caratteri
    */
     if (recv(cli->sockfd, name, NICKNAME_LENGTH, 0) <= 0 || strlen(name) < 2 || strlen(name) >= NICKNAME_LENGTH - 1) {
         printf("Il client non ha inserito un nickname.\n");
         leave_flag = 1;
     } else {
-        cli->name = name;                                                  // Assegna il nome alla struttura client
-        sprintf(buff_out, "%s e' entrato nella chatoroom.\n", cli->name);  // Compone la stringa in un buffer
-        printf("%s", buff_out);                                            // Stampa il messaggio sul server
-        send_message(buff_out, cli->uid);                                  // Invia a tutti i client la comunicazione di un nuovo client
+        cli->name = name;                                                 // Assegna il nome alla struttura client
+        sprintf(buff_out, "%s è entrato nella chatoroom.\n", cli->name);  // Compone la stringa in un buffer
+        printf("%s", buff_out);                                           // Stampa il messaggio sul server
+        send_message(buff_out, cli->uid);                                 // Invia a tutti i client la comunicazione di un nuovo client
     }
 
     bzero(buff_out, BUFFER_SZ);  // Pulisce il buffer (imposta tutto a zero)
 
     while (1) {
-        if (leave_flag) break;  // Se si e' verificato un errore il client viene scartato
+        if (leave_flag) break;  // Se si è verificato un errore il client viene scartato
 
         int receive = recv(cli->sockfd, buff_out, BUFFER_SZ, 0);  // Riceve un messaggio e lo memorizza nel buffer
         if (receive > 0) {                                        // Se non ci sono errori
@@ -124,7 +124,7 @@ void *handle_client(void *arg) {
                 sscanf(buff_out, "%[^':']:%ld", message, &timestamp);  // Estrae il messaggio e il timestamp
 
                 pthread_mutex_lock(&messages_mutex);                  // Acquisisce la lock
-                if (mode == 0) timestamp = get_current_time();        // Se la modalita' e' la zero viene utilizzato un timestamp generato dal server
+                if (mode == 0) timestamp = get_current_time();        // Se la modalità è la zero viene utilizzato un timestamp generato dal server
                 push(&messages, message, cli->uid, name, timestamp);  // Aggiunge il messaggio in coda
                 pthread_mutex_unlock(&messages_mutex);                // Rilascia la lock
 
@@ -159,7 +159,7 @@ void *handle_send_message(void *arg) {
     char *message = calloc(BUFFER_SZ + NICKNAME_LENGTH + 3, sizeof(char));
     while (1) {
         pthread_mutex_lock(&messages_mutex);  // Acquisisce la lock
-        if (!isEmpty(&messages)) {            // Se la coda e' vuota non fa nulla
+        if (!isEmpty(&messages)) {            // Se la coda è vuota non fa nulla
             bzero(message, BUFFER_SZ + NICKNAME_LENGTH + 3);
             sprintf(message, "%s: %s\n", messages->user_name, messages->message);  // Formatta il messaggio in: nickname: messaggio\n
             send_message(message, messages->uid);                                  // Inoltra il messaggio a tutti i client tranne che al mittente
@@ -167,7 +167,7 @@ void *handle_send_message(void *arg) {
         }
         pthread_mutex_unlock(&messages_mutex);  // Rilascia la lock
         if (mode == 1) {
-            sleep(5);  // Se il server delle inoltrati i messaggi in base al timestamp di invio (modalita' 1) allora si crea una finestra di 5 secondi
+            sleep(5);  // Se il server delle inoltrati i messaggi in base al timestamp di invio (modalità 1) allora si crea una finestra di 5 secondi
         }
     }
     free(message);
@@ -182,9 +182,9 @@ int main(int argc, char **argv) {
 
     char *ip = "127.0.0.1";    // Indirizzo locale del server
     int port = atoi(argv[1]);  // Legge la porta e la converte in intero
-    mode = atoi(argv[2]);      // Legga la modalita' e la converte in intero
+    mode = atoi(argv[2]);      // Legga la modalità e la converte in intero
 
-    /* Se le modalita' non sono 0 o 1 genera errore. */
+    /* Se le modalità non sono 0 o 1 genera errore. */
     if (mode != 0 && mode != 1) {
         printf("MODALITÀ:\n0) Timestamp del server.\n1) Timestamp del client.\n");
         return EXIT_FAILURE;
@@ -235,7 +235,7 @@ int main(int argc, char **argv) {
         socklen_t clilen = sizeof(cli_addr);
         connfd = accept(listenfd, (struct sockaddr *)&cli_addr, &clilen);
 
-        /* Verifica se e' stato raggiunto il numero massimo di client. */
+        /* Verifica se è stato raggiunto il numero massimo di client. */
         if ((cli_count + 1) == MAX_CLIENTS) {
             printf("Raggiunto il numero massimo di client. Rifiutato: ");
             close(connfd);  // Chiude la connessione
