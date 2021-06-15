@@ -14,11 +14,11 @@
 
 #define LENGTH 2048
 
-volatile sig_atomic_t flag = 0;
+int flag = 0;
 int sockfd = 0;
 char name[32];
 
-FILE *log_fp;
+FILE *log_fp;  // Log dei messaggi
 
 void catch_ctrl_c_and_exit(int sig) { flag = 1; }
 
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
     pthread_t send_msg_thread;
 
     if (pthread_create(&send_msg_thread, NULL, (void *)send_msg_handler, NULL) != 0) {
-        printf("[ERROR]: Impossibile creare il thread per l'invio dei messaggi.\n");
+        printf("[ERRORE]: Impossibile creare il thread per l'invio dei messaggi.\n");
 
         return EXIT_FAILURE;
     }

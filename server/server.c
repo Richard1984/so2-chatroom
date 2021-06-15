@@ -68,16 +68,14 @@ void clients_queue_remove(int uid) {
 }
 
 // Invia un messaggio a tutti i client ad eccezione di quello con uid specificato
-void send_message(char *s, int uid) {
+void send_message(char *message, int uid) {
     pthread_mutex_lock(&clients_mutex);  // Acquisisce la lock
 
-    fprintf(log_fp, "%s\n", s);  // Salva il messaggio nel log
-
     for (int i = 0; i < MAX_CLIENTS; ++i) {
-        if (clients[i]) {                                           // Se nella posizione il client non è NULL
-            if (clients[i]->uid != uid) {                           // Se l'uid non corrisponde al mittente
-                if (write(clients[i]->sockfd, s, strlen(s)) < 0) {  // Invia il messaggio sulla socket del client
-                    perror("[ERROR]: Impossibile inviare il messaggio.");
+        if (clients[i]) {                                                       // Se nella posizione il client non è NULL
+            if (clients[i]->uid != uid) {                                       // Se l'uid non corrisponde al mittente
+                if (write(clients[i]->sockfd, message, strlen(message)) < 0) {  // Invia il messaggio sulla socket del client
+                    perror("[ERRORE]: Impossibile inviare il messaggio.");
                     break;
                 }
             }
@@ -150,6 +148,7 @@ void *handle_client(void *arg) {
     free(name);                      // Libera la memoria associata al nickname temporaneo
     cli_count--;                     // Decrementa il contatore dei client
     pthread_detach(pthread_self());  // Imposta il thread a detached
+    fclose(log_fp);                  // Chiude il file
 
     return NULL;
 }
@@ -163,6 +162,7 @@ void *handle_send_message(void *arg) {
             memset(message, 0, BUFFER_SZ + NICKNAME_LENGTH + 3);                   // Pulisce il buffer
             sprintf(message, "%s: %s\n", messages->user_name, messages->message);  // Formatta il messaggio in: nickname: messaggio\n
             send_message(message, messages->uid);                                  // Inoltra il messaggio a tutti i client tranne che al mittente
+            fprintf(log_fp, "%s: %s\n", messages->user_name, messages->message);   // Salva il messaggio nel log
             pop(&messages);                                                        // Rimuove il messaggio dalla coda
         }
         pthread_mutex_unlock(&messages_mutex);  // Rilascia la lock
@@ -255,8 +255,6 @@ int main(int argc, char **argv) {
         /* Riduce l'uso della CPU */
         sleep(1);
     }
-
-    fclose(log_fp);  // Chiude il file
 
     return EXIT_SUCCESS;
 }
