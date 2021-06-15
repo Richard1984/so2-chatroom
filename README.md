@@ -17,9 +17,9 @@ Il server viene avviato con il seguente comando:
 $ ./server <porta> <modalità> <wait>
 ```
 
-La porta verrà utilizzata dal server per definire la socket.
-La modalità definisce l'ordine con cui vengono inoltrati i messaggi ricevuti dai client. Le modalità sono due:
-Il wait definisce la durata della finestra. Se la modalità è zero viene ignorata. Se la modalita è uno ma non viene fornito, viene impostato a 5 secondi.
+* La porta verrà utilizzata dal server per definire la socket.
+* La modalità definisce l'ordine con cui vengono inoltrati i messaggi ricevuti dai client. Le modalità sono due:
+* Il wait definisce la durata della finestra. Se la modalità è zero viene ignorata. Se la modalita è uno ma il wait non viene fornito, viene impostato a 5 secondi.
 
 1. 0: Il server inoltra i messaggi nell'ordine in cui sono arrivati.
 2. 1: Il server inoltra i messaggi ordinandoli in base al timestamp di invio del client.
