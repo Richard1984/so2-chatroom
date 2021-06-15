@@ -36,7 +36,7 @@ Node *messages = NULL;         // Coda dei messaggi
 pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;   // Mutex per la lista dei client
 pthread_mutex_t messages_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex per la coda dei messaggi
 
-FILE *fp;  // Log dei messaggi
+FILE *log_fp;  // Log dei messaggi
 
 /* Aggiunge un client alla coda */
 void clients_queue_add(client *cl) {
@@ -71,7 +71,7 @@ void clients_queue_remove(int uid) {
 void send_message(char *s, int uid) {
     pthread_mutex_lock(&clients_mutex);  // Acquisisce la lock
 
-    fprintf(fp, "%s\n", s);  // Salva il messaggio nel log
+    fprintf(log_fp, "%s\n", s);  // Salva il messaggio nel log
 
     for (int i = 0; i < MAX_CLIENTS; ++i) {
         if (clients[i]) {                                           // Se nella posizione il client non è NULL
@@ -110,7 +110,7 @@ void *handle_client(void *arg) {
         send_message(buff_out, cli->uid);                                 // Invia a tutti i client la comunicazione di un nuovo client
     }
 
-    bzero(buff_out, BUFFER_SZ);  // Pulisce il buffer (imposta tutto a zero)
+    memset(buff_out, 0, BUFFER_SZ);  // Pulisce il buffer (imposta tutto a zero)
 
     while (1) {
         if (leave_flag) break;  // Se si è verificato un errore il client viene scartato
@@ -141,7 +141,7 @@ void *handle_client(void *arg) {
             leave_flag = 1;
         }
 
-        bzero(buff_out, BUFFER_SZ);  // Pulisce il buffer (imposta tutto a zero)
+        memset(buff_out, 0, BUFFER_SZ);  // Pulisce il buffer (imposta tutto a zero)
     }
 
     close(cli->sockfd);              // Chiude la connessione
@@ -158,9 +158,9 @@ void *handle_client(void *arg) {
 void *handle_send_message(void *arg) {
     char *message = calloc(BUFFER_SZ + NICKNAME_LENGTH + 3, sizeof(char));
     while (1) {
-        pthread_mutex_lock(&messages_mutex);  // Acquisisce la lock
-        if (!isEmpty(&messages)) {            // Se la coda è vuota non fa nulla
-            bzero(message, BUFFER_SZ + NICKNAME_LENGTH + 3);
+        pthread_mutex_lock(&messages_mutex);                                       // Acquisisce la lock
+        if (!isEmpty(&messages)) {                                                 // Se la coda è vuota non fa nulla
+            memset(message, 0, BUFFER_SZ + NICKNAME_LENGTH + 3);                   // Pulisce il buffer
             sprintf(message, "%s: %s\n", messages->user_name, messages->message);  // Formatta il messaggio in: nickname: messaggio\n
             send_message(message, messages->uid);                                  // Inoltra il messaggio a tutti i client tranne che al mittente
             pop(&messages);                                                        // Rimuove il messaggio dalla coda
@@ -224,7 +224,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    fp = open_file();  // Apre il file per il log
+    log_fp = open_file();  // Apre il file per il log
 
     /* Crea il thread per l'inoltro dei messaggi */
     pthread_create(&tid, NULL, &handle_send_message, NULL);
@@ -256,7 +256,7 @@ int main(int argc, char **argv) {
         sleep(1);
     }
 
-    fclose(fp);
+    fclose(log_fp);  // Chiude il file
 
     return EXIT_SUCCESS;
 }

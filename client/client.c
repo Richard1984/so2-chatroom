@@ -42,21 +42,22 @@ void send_msg_handler() {
             send(sockfd, buffer, strlen(buffer), 0);                 // Invia il messaggio al server
         }
 
-        bzero(message, LENGTH);
-        bzero(buffer, LENGTH + sizeof(long int));
+        memset(message, 0, LENGTH);                    // Pulisce il buffer (imposta tutto a zero)
+        memset(buffer, 0, LENGTH + sizeof(long int));  // Pulisce il buffer (imposta tutto a zero)
     }
-    fclose(log_fp);
-    catch_ctrl_c_and_exit(2);
+    fclose(log_fp);            // Chiude il file
+    catch_ctrl_c_and_exit(2);  // Interrompe il programma
 }
 
 void recv_msg_handler() {
     char message[LENGTH] = {};
     while (1) {
-        int receive = recv(sockfd, message, LENGTH, 0);
-        if (receive > 0) {
-            printf("%s", message);
-            str_overwrite_stdout();
+        int receive = recv(sockfd, message, LENGTH, 0);  // Riceve il messaggio
+        if (receive > 0) {                               // Se il messaggio non è vuoto
+            printf("%s", message);                       // Stampa il messaggio
+            str_overwrite_stdout();                      // Predispone il layout "> "
         } else if (receive == 0) {
+            // 0 bytes letti
             break;
         } else {
             // Si è verificato un errore
