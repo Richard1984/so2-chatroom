@@ -1,6 +1,6 @@
 # Homework Sistemi Operativi (Modulo 2) A.A. 2020/2021
-* ### Chatroom multithread in C
-* ### Sviluppato da Riccardo Sangiorgio (matricola: 1957804)
+* Chatroom multithread in C
+* Sviluppato da Riccardo Sangiorgio (matricola: 1957804)
 
 
 ## Descrizione del progetto
