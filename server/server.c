@@ -118,33 +118,31 @@ void *handle_client(void *arg) {
             if (strlen(buff_out) > 0) {                           // Se il messaggio ha contenuto
                 char *message = calloc(2048, sizeof(char));
                 long int timestamp;
-
+                string_remove_newline(buff_out);                       // Rimuove newline
                 sscanf(buff_out, "%[^':']:%ld", message, &timestamp);  // Estrae il messaggio e il timestamp
 
-                pthread_mutex_lock(&messages_mutex);                  // Acquisisce la lock
-                if (mode == 0) timestamp = get_current_time();        // Se la modalità è la zero viene utilizzato un timestamp generato dal server
-                push(&messages, message, cli->uid, name, timestamp);  // Aggiunge il messaggio in coda
-                string_remove_newline(buff_out);
-                printf("%s: %s\n", name, message);      // Stampa il messaggio
-                pthread_mutex_unlock(&messages_mutex);  // Rilascia la lock
+                pthread_mutex_lock(&messages_mutex);                       // Acquisisce la lock
+                printf("%s: %s\n", name, message);                         // Stampa il messaggio
+                if (mode == 0) timestamp = get_current_time();             // Se la modalità è la zero viene utilizzato un timestamp generato dal server
+                push(&messages, message, cli->uid, cli->name, timestamp);  // Aggiunge il messaggio in coda
+                pthread_mutex_unlock(&messages_mutex);                     // Rilascia la lock
+                free(message);                                             // Libera la memoria del messaggio
             }
-        } else if (receive == 0) {
-            // Si interrompe il ciclo
+        } else if (receive == 0) {                                      // Si sono ricevuti zero byte (il client è uscito)
             sprintf(buff_out, "%s ha lasciato la chat.\n", cli->name);  // Si formatta il messaggio di abbandono della chat
             printf("%s", buff_out);                                     // Si stampa il  messaggio
             send_message(buff_out, cli->uid);                           // Si invia il messaggio, ma solo se non si è in fase di exit
             close(cli->sockfd);                                         // Chiude la connessione
-            leave_flag = 1;                                             // Si sono ricevuti zero byte o  è stato ricevuto il messaggio "exit"
+            leave_flag = 1;                                             // Si interrompe il ciclo
         } else {                                                        // Si è verificato un errore
-            printf("[ERRORE]: Si è verificato un errore.\n");           // Si stamoa l'errore
+            printf("[ERRORE]: Si è verificato un errore.\n");           // Si stampa l'errore
             leave_flag = 1;                                             // Si interrompo il ciclo
         }
         memset(buff_out, 0, sizeof(buff_out));  // Pulisce il buffer (imposta tutto a zero)
     }
-    // close(cli->sockfd);              // Chiude la connessione
     clients_queue_remove(cli->uid);  // Rimuove il client dalla lista dei client
     free(cli);                       // Libera la memoria associata al client
-    // free(name);                      // Libera la memoria associata al nickname temporaneo
+    free(name);                      // Libera la memoria associata al nickname temporaneo
     cli_count--;                     // Decrementa il contatore dei client
     pthread_detach(pthread_self());  // Imposta il thread a detached
 
@@ -171,9 +169,6 @@ void *handle_send_message(void *arg) {
             sleep(*(int *)arg);  // Se il server deve inoltrare i messaggi in base al timestamp di invio (modalità 1) allora si crea una finestra di 5 secondi
         }
     }
-    // if (isEmpty(&messages)) fclose(log_fp);
-    // close(listenfd);
-    // fclose(log_fp);                  // Chiude il file
     free(message);                   // Libera la memoria
     pthread_detach(pthread_self());  // Imposta il thread a detached
 

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* Nodo */
 typedef struct node {
@@ -14,8 +15,10 @@ typedef struct node {
 Node* newNode(char* message, int uid, char* user_name, long int priority) {
     Node* temp = malloc(sizeof(Node));  // Alloca la memoria per il nodo
     temp->uid = uid;
-    temp->message = message;
-    temp->user_name = user_name;
+    temp->message = calloc(2048, sizeof(char));
+    strcpy(temp->message, message);
+    temp->user_name = calloc(32, sizeof(char));
+    strcpy(temp->user_name, user_name);
     temp->priority = priority;
     temp->next = NULL;  // Imposta il successivo a NULL
 
@@ -27,6 +30,7 @@ void pop(Node** head) {
     Node* temp = *head;       // Indirizzo dell'area puntata da head
     (*head) = (*head)->next;  // Sostituisce il primo con il successivo al primo
     free(temp->message);      // Libera la memoria del messaggio
+    free(temp->user_name);    // Libera la memoria del nickname
     free(temp);               // Libera la memoria precedentemente puntata da head
 }
 

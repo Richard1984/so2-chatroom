@@ -61,14 +61,13 @@ void recv_msg_handler() {
         if (receive > 0) {                               // Se il messaggio non è vuoto
             printf("%s", message);                       // Stampa il messaggio
             str_overwrite_stdout();                      // Predispone il layout "> "
-        } else if (receive == 0) {
-            // 0 bytes letti
-            catch_ctrl_c_and_exit(2);
+        } else if (receive == 0) {                       // Il server si è disconnesso
+            catch_ctrl_c_and_exit(2);                    // Interrompi il programma
             break;
         } else {
             // Si è verificato un errore
         }
-        memset(message, 0, sizeof(message));
+        memset(message, 0, sizeof(message));  // Pulisce il buffer (imposta tutto a zero)
     }
 }
 
