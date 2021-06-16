@@ -27,12 +27,12 @@ FILE *open_file() {
 
     struct tm *local = localtime(&now);  // Legge l'ora e la converte in una struttura "calendario" locale
 
-    day = local->tm_mday;          // get day of month (1 to 31)
-    month = local->tm_mon + 1;     // get month of year (0 to 11)
-    year = local->tm_year + 1900;  // get year since 1900
+    day = local->tm_mday;          // restituisce il giorno del mese associato alla data (1 to 31)
+    month = local->tm_mon + 1;     // restituisce il mese dell'anno associato alla data (0 to 11) + 1 (mesi da 1 a 12)
+    year = local->tm_year + 1900;  // resituisce gli anni trascorsi dal 1900 + 1900 (anno assoluto)
 
-    sprintf(date, "%d-%d-%d", day, month, year);
-    sprintf(path, "log-%s.log.txt", date);
+    sprintf(date, "%d-%d-%d", day, month, year);  // Compone la data in formato giorno-mese-anno
+    sprintf(path, "log-%s.log.txt", date);        // Compone il nome del file di log
 
     return fopen(path, "a");
 }

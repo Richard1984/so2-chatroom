@@ -59,7 +59,7 @@ void recv_msg_handler() {
     while (1) {
         int receive = recv(sockfd, message, LENGTH, 0);  // Riceve il messaggio
         if (receive > 0) {                               // Se il messaggio non è vuoto
-            if (strcmp(message, "close\n") == 0) {       // Se il messaggio è di close
+            if (strcmp(message, "close") == 0) {         // Se il messaggio è di close
                 catch_ctrl_c_and_exit(2);                // Interrompi il programma e lascia la chat
                 break;
             }

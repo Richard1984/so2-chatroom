@@ -124,6 +124,7 @@ void *handle_client(void *arg) {
     while (1) {
         if (leave_flag || flag) break;  // Se si è verificato un errore il client viene scartato
 
+        // int receive = recv(cli->sockfd, buff_out, BUFFER_SZ, MSG_DONTWAIT);  // Riceve un messaggio e lo memorizza nel buffer, ma è non-blocking
         int receive = recv(cli->sockfd, buff_out, BUFFER_SZ, 0);  // Riceve un messaggio e lo memorizza nel buffer
         if (receive > 0) {                                        // Se non ci sono errori
             if (strlen(buff_out) > 0) {                           // Se il messaggio ha contenuto
@@ -143,7 +144,7 @@ void *handle_client(void *arg) {
         } else if (receive == 0 || strcmp(buff_out, "exit") == 0) {     // Si sono ricevuti zero byte o  è stato ricevuto il messaggio "exit"
             sprintf(buff_out, "%s ha lasciato la chat.\n", cli->name);  // Si formatta il messaggio di abbandono della chat
             printf("%s", buff_out);                                     // Si stampa il  messaggio
-            send_message(buff_out, cli->uid);                           // Si invia il messaggio
+            if (!flag) send_message(buff_out, cli->uid);                // Si invia il messaggio, ma solo se non si è in fase di exit
             leave_flag = 1;                                             // Si interrompe il ciclo
         } else {                                                        // Si è verificato un errore
             printf("[ERRORE]: Si è verificato un errore.\n");           // Si stamoa l'errore
@@ -152,7 +153,7 @@ void *handle_client(void *arg) {
 
         memset(buff_out, 0, sizeof(buff_out));  // Pulisce il buffer (imposta tutto a zero)
     }
-
+    // send_message("close", -1); // Nel caso si usi MSG_DONTWAIT
     close(cli->sockfd);              // Chiude la connessione
     clients_queue_remove(cli->uid);  // Rimuove il client dalla lista dei client
     free(cli);                       // Libera la memoria associata al client
@@ -170,8 +171,8 @@ void *handle_send_message(void *arg) {
 
     while (1) {
         if (flag) {
-            send_message("close\n", -1);  // Se la flag è setta manda un messaggio close
-            break;                        // Se la flag è settata esce dal loop
+            send_message("close", -1);  // Se la flag è setta manda un messaggio close
+            break;                      // Se la flag è settata esce dal loop
         }
         pthread_mutex_lock(&messages_mutex);                                       // Acquisisce la lock
         if (!isEmpty(&messages)) {                                                 // Se la coda è vuota non fa nulla
