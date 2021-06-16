@@ -98,7 +98,7 @@ void send_message(char *message, int uid) {
 
 /* Gestisce le interazione del server con il client */
 void *handle_client(void *arg) {
-    char buff_out[BUFFER_SZ];                            // Buffer di output sul server
+    char buff_out[BUFFER_SZ + NICKNAME_LENGTH + 3];      // Buffer di output sul server
     char *name = calloc(NICKNAME_LENGTH, sizeof(char));  // Nickname temporaneo del client
     int leave_flag = 0;                                  // Flag di validità del client
 
@@ -119,7 +119,7 @@ void *handle_client(void *arg) {
         send_message(buff_out, cli->uid);                                 // Invia a tutti i client la comunicazione di un nuovo client
     }
 
-    memset(buff_out, 0, BUFFER_SZ);  // Pulisce il buffer (imposta tutto a zero)
+    memset(buff_out, 0, sizeof(buff_out));  // Pulisce il buffer (imposta tutto a zero)
 
     while (1) {
         if (leave_flag || flag) break;  // Se si è verificato un errore il client viene scartato
@@ -150,7 +150,7 @@ void *handle_client(void *arg) {
             leave_flag = 1;                                             // Si interrompo il ciclo
         }
 
-        memset(buff_out, 0, BUFFER_SZ);  // Pulisce il buffer (imposta tutto a zero)
+        memset(buff_out, 0, sizeof(buff_out));  // Pulisce il buffer (imposta tutto a zero)
     }
 
     close(cli->sockfd);              // Chiude la connessione
@@ -175,12 +175,11 @@ void *handle_send_message(void *arg) {
         }
         pthread_mutex_lock(&messages_mutex);                                       // Acquisisce la lock
         if (!isEmpty(&messages)) {                                                 // Se la coda è vuota non fa nulla
-            memset(message, 0, BUFFER_SZ + NICKNAME_LENGTH + 3);                   // Pulisce il buffer
+            memset(message, 0, sizeof(BUFFER_SZ + NICKNAME_LENGTH + 3));           // Pulisce il buffer (imposta tutto a zero)
             sprintf(message, "%s: %s\n", messages->user_name, messages->message);  // Formatta il messaggio in: nickname: messaggio\n
             send_message(message, messages->uid);                                  // Inoltra il messaggio a tutti i client tranne che al mittente
             fprintf(log_fp, "%s: %s\n", messages->user_name, messages->message);   // Salva il messaggio nel log
             pop(&messages);                                                        // Rimuove il messaggio dalla coda
-            memset(message, 0, BUFFER_SZ + NICKNAME_LENGTH + 3);                   // Pulisce il buffer (imposta tutto a zero)
         }
         pthread_mutex_unlock(&messages_mutex);  // Rilascia la lock
 

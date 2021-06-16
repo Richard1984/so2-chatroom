@@ -13,6 +13,7 @@
 #include "utils.c"
 
 #define LENGTH 2048
+#define NICKNAME_LENGTH 32
 
 /**
  * volatile: "disattiva le ottimizzazioni del compilatore (utile per il multithreading e per i signal handler)"
@@ -28,7 +29,7 @@ void catch_ctrl_c_and_exit(int sig) { flag = 1; }
 
 void send_msg_handler() {
     char message[LENGTH] = {};
-    char buffer[LENGTH + sizeof(long int)] = {};
+    char buffer[LENGTH + sizeof(long int) + 1] = {};
 
     log_fp = open_file(name);  // Apre il file di log
 
@@ -46,15 +47,15 @@ void send_msg_handler() {
             send(sockfd, buffer, strlen(buffer), 0);                 // Invia il messaggio al server
         }
 
-        memset(message, 0, LENGTH);                    // Pulisce il buffer (imposta tutto a zero)
-        memset(buffer, 0, LENGTH + sizeof(long int));  // Pulisce il buffer (imposta tutto a zero)
+        memset(message, 0, LENGTH);         // Pulisce il buffer (imposta tutto a zero)
+        memset(buffer, 0, sizeof(buffer));  // Pulisce il buffer (imposta tutto a zero)
     }
     fclose(log_fp);            // Chiude il file
     catch_ctrl_c_and_exit(2);  // Interrompe il programma
 }
 
 void recv_msg_handler() {
-    char message[LENGTH] = {};
+    char message[LENGTH + NICKNAME_LENGTH + 3] = {};
     while (1) {
         int receive = recv(sockfd, message, LENGTH, 0);  // Riceve il messaggio
         if (receive > 0) {                               // Se il messaggio non è vuoto
@@ -92,10 +93,10 @@ int main(int argc, char **argv) {
     signal(SIGINT, catch_ctrl_c_and_exit);  // Viene catturato il Ctrl+C
 
     printf("Inserisci il tuo nome: ");
-    fgets(name, 32, stdin);       // Si legge il nickname
-    string_remove_newline(name);  // Viene rimosso il \n
+    fgets(name, NICKNAME_LENGTH, stdin);  // Si legge il nickname
+    string_remove_newline(name);          // Viene rimosso il \n
 
-    if (strlen(name) > 32 || strlen(name) < 2) {
+    if (strlen(name) > NICKNAME_LENGTH || strlen(name) < 2) {
         printf("La lunghezza del nome deve essere compresa tra i 2 e i 30 caratteri.\n");
         return EXIT_FAILURE;
     }
