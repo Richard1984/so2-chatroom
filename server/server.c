@@ -18,6 +18,10 @@
 #define MESSAGES_QUEUE_SIZE 5
 #define NICKNAME_LENGTH 32
 
+/**
+ * volatile: "disattiva le ottimizzazioni del compilatore (utile per il multithreading e per i signal handler)"
+ * sig_atomic_t: tipo intero da usare in un signal handler
+ */
 volatile sig_atomic_t flag = 0;
 static _Atomic unsigned int cli_count = 0;
 static int uid = 10;
@@ -136,14 +140,14 @@ void *handle_client(void *arg) {
 
                 string_remove_newline(buff_out);
             }
-        } else if (receive == 0 || strcmp(buff_out, "exit") == 0) {
-            sprintf(buff_out, "%s ha lasciato la chat.\n", cli->name);
-            printf("%s", buff_out);
-            send_message(buff_out, cli->uid);
-            leave_flag = 1;
-        } else {
-            printf("[ERRORE]: Si è verificato un errore.\n");
-            leave_flag = 1;
+        } else if (receive == 0 || strcmp(buff_out, "exit") == 0) {     // Si sono ricevuti zero byte o  è stato ricevuto il messaggio "exit"
+            sprintf(buff_out, "%s ha lasciato la chat.\n", cli->name);  // Si formatta il messaggio di abbandono della chat
+            printf("%s", buff_out);                                     // Si stampa il  messaggio
+            send_message(buff_out, cli->uid);                           // Si invia il messaggio
+            leave_flag = 1;                                             // Si interrompe il ciclo
+        } else {                                                        // Si è verificato un errore
+            printf("[ERRORE]: Si è verificato un errore.\n");           // Si stamoa l'errore
+            leave_flag = 1;                                             // Si interrompo il ciclo
         }
 
         memset(buff_out, 0, BUFFER_SZ);  // Pulisce il buffer (imposta tutto a zero)
@@ -154,7 +158,6 @@ void *handle_client(void *arg) {
     free(cli);                       // Libera la memoria associata al client
     free(name);                      // Libera la memoria associata al nickname temporaneo
     cli_count--;                     // Decrementa il contatore dei client
-    // flag = 1;                        // Flag per bloccare il thread per l'inoltro dei messaggi
     pthread_detach(pthread_self());  // Imposta il thread a detached
 
     return NULL;
@@ -166,7 +169,10 @@ void *handle_send_message(void *arg) {
     log_fp = open_file();  // Apre il file per il log
 
     while (1) {
-        if (flag) break;                                                           // Se la flag è settata esce dal loop
+        if (flag) {
+            send_message("close\n", -1);  // Se la flag è setta manda un messaggio close
+            break;                        // Se la flag è settata esce dal loop
+        }
         pthread_mutex_lock(&messages_mutex);                                       // Acquisisce la lock
         if (!isEmpty(&messages)) {                                                 // Se la coda è vuota non fa nulla
             memset(message, 0, BUFFER_SZ + NICKNAME_LENGTH + 3);                   // Pulisce il buffer
@@ -179,7 +185,7 @@ void *handle_send_message(void *arg) {
         pthread_mutex_unlock(&messages_mutex);  // Rilascia la lock
 
         if (mode == 1) {
-            sleep(*(int *)arg);  // Se il server delle inoltrati i messaggi in base al timestamp di invio (modalità 1) allora si crea una finestra di 5 secondi
+            sleep(*(int *)arg);  // Se il server deve inoltrare i messaggi in base al timestamp di invio (modalità 1) allora si crea una finestra di 5 secondi
         }
     }
     fclose(log_fp);                  // Chiude il file
@@ -224,9 +230,8 @@ int main(int argc, char **argv) {
     serv_addr.sin_addr.s_addr = inet_addr(ip);
     serv_addr.sin_port = htons(port);
 
-    /* Ignore pipe signals */
-    signal(SIGPIPE, SIG_IGN);
-    signal(SIGINT, catch_ctrl_c_and_exit);
+    signal(SIGPIPE, SIG_IGN);               // Ignora i pipe signal
+    signal(SIGINT, catch_ctrl_c_and_exit);  // Gestisce il Ctrl+C
 
     if (setsockopt(listenfd, SOL_SOCKET, (SO_REUSEPORT | SO_REUSEADDR), (char *)&option, sizeof(option)) < 0) {
         perror("[ERRORE]: Impossibile impostare le opzioni della socket.");
@@ -268,7 +273,7 @@ int main(int argc, char **argv) {
             continue;
         }
 
-        /* Client settings */
+        /* Creazione del client */
         client *cli = (client *)malloc(sizeof(client));
         cli->address = cli_addr;
         cli->sockfd = connfd;

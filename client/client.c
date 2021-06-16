@@ -14,6 +14,10 @@
 
 #define LENGTH 2048
 
+/**
+ * volatile: "disattiva le ottimizzazioni del compilatore (utile per il multithreading e per i signal handler)"
+ * sig_atomic_t: tipo intero da usare in un signal handler
+ */
 volatile sig_atomic_t flag = 0;
 int sockfd = 0;
 char name[32];
@@ -54,8 +58,12 @@ void recv_msg_handler() {
     while (1) {
         int receive = recv(sockfd, message, LENGTH, 0);  // Riceve il messaggio
         if (receive > 0) {                               // Se il messaggio non è vuoto
-            printf("%s", message);                       // Stampa il messaggio
-            str_overwrite_stdout();                      // Predispone il layout "> "
+            if (strcmp(message, "close\n") == 0) {       // Se il messaggio è di close
+                catch_ctrl_c_and_exit(2);                // Interrompi il programma e lascia la chat
+                break;
+            }
+            printf("%s", message);   // Stampa il messaggio
+            str_overwrite_stdout();  // Predispone il layout "> "
         } else if (receive == 0) {
             // 0 bytes letti
             break;
@@ -84,8 +92,8 @@ int main(int argc, char **argv) {
     signal(SIGINT, catch_ctrl_c_and_exit);  // Viene catturato il Ctrl+C
 
     printf("Inserisci il tuo nome: ");
-    fgets(name, 32, stdin);
-    string_remove_newline(name);
+    fgets(name, 32, stdin);       // Si legge il nickname
+    string_remove_newline(name);  // Viene rimosso il \n
 
     if (strlen(name) > 32 || strlen(name) < 2) {
         printf("La lunghezza del nome deve essere compresa tra i 2 e i 30 caratteri.\n");
