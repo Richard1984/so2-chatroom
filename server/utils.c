@@ -34,7 +34,9 @@ FILE *open_file() {
     sprintf(date, "%d-%d-%d", day, month, year);  // Compone la data in formato giorno-mese-anno
     sprintf(path, "log-%s.log.txt", date);        // Compone il nome del file di log
 
-    return fopen(path, "a");
+    FILE *fp = fopen(path, "a");
+    setvbuf(fp, NULL, _IOLBF, BUFSIZ);
+    return fp;
 }
 
 /**

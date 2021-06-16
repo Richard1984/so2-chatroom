@@ -18,11 +18,6 @@
 #define MESSAGES_QUEUE_SIZE 5
 #define NICKNAME_LENGTH 32
 
-/**
- * volatile: "disattiva le ottimizzazioni del compilatore (utile per il multithreading e per i signal handler)"
- * sig_atomic_t: tipo intero da usare in un signal handler
- */
-volatile sig_atomic_t flag = 0;
 static _Atomic unsigned int cli_count = 0;  // Variabile atomica
 static int uid = 10;
 static int mode = 0;  // 0: timestamp di ricezione, 1: timestamp di invio
@@ -43,11 +38,6 @@ pthread_mutex_t clients_mutex = PTHREAD_MUTEX_INITIALIZER;   // Mutex per la lis
 pthread_mutex_t messages_mutex = PTHREAD_MUTEX_INITIALIZER;  // Mutex per la coda dei messaggi
 
 FILE *log_fp;  // Log dei messaggi
-
-void catch_ctrl_c_and_exit(int sig) {
-    flag = 1;
-    close(listenfd);
-}
 
 /* Aggiunge un client alla coda */
 void clients_queue_add(client *cl) {
@@ -121,9 +111,7 @@ void *handle_client(void *arg) {
 
     memset(buff_out, 0, sizeof(buff_out));  // Pulisce il buffer (imposta tutto a zero)
 
-    while (1) {
-        if (leave_flag || flag) break;  // Se si è verificato un errore il client viene scartato
-
+    while (!leave_flag) {
         // int receive = recv(cli->sockfd, buff_out, BUFFER_SZ, MSG_DONTWAIT);  // Riceve un messaggio e lo memorizza nel buffer, ma è non-blocking
         int receive = recv(cli->sockfd, buff_out, BUFFER_SZ, 0);  // Riceve un messaggio e lo memorizza nel buffer
         if (receive > 0) {                                        // Se non ci sono errori
@@ -136,28 +124,27 @@ void *handle_client(void *arg) {
                 pthread_mutex_lock(&messages_mutex);                  // Acquisisce la lock
                 if (mode == 0) timestamp = get_current_time();        // Se la modalità è la zero viene utilizzato un timestamp generato dal server
                 push(&messages, message, cli->uid, name, timestamp);  // Aggiunge il messaggio in coda
-                printf("%s: %s\n", name, message);                    // Stampa il messaggio
-                pthread_mutex_unlock(&messages_mutex);                // Rilascia la lock
-
                 string_remove_newline(buff_out);
+                printf("%s: %s\n", name, message);      // Stampa il messaggio
+                pthread_mutex_unlock(&messages_mutex);  // Rilascia la lock
             }
-        } else if (receive == 0 || strcmp(buff_out, "exit") == 0) {     // Si sono ricevuti zero byte o  è stato ricevuto il messaggio "exit"
+        } else if (receive == 0) {
+            // Si interrompe il ciclo
             sprintf(buff_out, "%s ha lasciato la chat.\n", cli->name);  // Si formatta il messaggio di abbandono della chat
             printf("%s", buff_out);                                     // Si stampa il  messaggio
-            if (!flag) send_message(buff_out, cli->uid);                // Si invia il messaggio, ma solo se non si è in fase di exit
-            leave_flag = 1;                                             // Si interrompe il ciclo
+            send_message(buff_out, cli->uid);                           // Si invia il messaggio, ma solo se non si è in fase di exit
+            close(cli->sockfd);                                         // Chiude la connessione
+            leave_flag = 1;                                             // Si sono ricevuti zero byte o  è stato ricevuto il messaggio "exit"
         } else {                                                        // Si è verificato un errore
             printf("[ERRORE]: Si è verificato un errore.\n");           // Si stamoa l'errore
             leave_flag = 1;                                             // Si interrompo il ciclo
         }
-
         memset(buff_out, 0, sizeof(buff_out));  // Pulisce il buffer (imposta tutto a zero)
     }
-    // send_message("close", -1); // Nel caso si usi MSG_DONTWAIT
-    close(cli->sockfd);              // Chiude la connessione
+    // close(cli->sockfd);              // Chiude la connessione
     clients_queue_remove(cli->uid);  // Rimuove il client dalla lista dei client
     free(cli);                       // Libera la memoria associata al client
-    free(name);                      // Libera la memoria associata al nickname temporaneo
+    // free(name);                      // Libera la memoria associata al nickname temporaneo
     cli_count--;                     // Decrementa il contatore dei client
     pthread_detach(pthread_self());  // Imposta il thread a detached
 
@@ -170,10 +157,6 @@ void *handle_send_message(void *arg) {
     log_fp = open_file();  // Apre il file per il log
 
     while (1) {
-        if (flag) {
-            send_message("close", -1);  // Se la flag è setta manda un messaggio close
-            break;                      // Se la flag è settata esce dal loop
-        }
         pthread_mutex_lock(&messages_mutex);                                                                // Acquisisce la lock
         if (!isEmpty(&messages)) {                                                                          // Se la coda è vuota non fa nulla
             memset(message, 0, sizeof(BUFFER_SZ + NICKNAME_LENGTH + 3));                                    // Pulisce il buffer (imposta tutto a zero)
@@ -188,7 +171,9 @@ void *handle_send_message(void *arg) {
             sleep(*(int *)arg);  // Se il server deve inoltrare i messaggi in base al timestamp di invio (modalità 1) allora si crea una finestra di 5 secondi
         }
     }
-    fclose(log_fp);                  // Chiude il file
+    // if (isEmpty(&messages)) fclose(log_fp);
+    // close(listenfd);
+    // fclose(log_fp);                  // Chiude il file
     free(message);                   // Libera la memoria
     pthread_detach(pthread_self());  // Imposta il thread a detached
 
@@ -230,8 +215,7 @@ int main(int argc, char **argv) {
     serv_addr.sin_addr.s_addr = inet_addr(ip);
     serv_addr.sin_port = htons(port);
 
-    signal(SIGPIPE, SIG_IGN);               // Ignora i pipe signal
-    signal(SIGINT, catch_ctrl_c_and_exit);  // Gestisce il Ctrl+C
+    signal(SIGPIPE, SIG_IGN);  // Ignora i pipe signal
 
     if (setsockopt(listenfd, SOL_SOCKET, (SO_REUSEPORT | SO_REUSEADDR), (char *)&option, sizeof(option)) < 0) {
         perror("[ERRORE]: Impossibile impostare le opzioni della socket.");
@@ -265,7 +249,7 @@ int main(int argc, char **argv) {
     while (1) {
         socklen_t clilen = sizeof(cli_addr);
         connfd = accept(listenfd, (struct sockaddr *)&cli_addr, &clilen);
-        if (flag) break;
+        // if (flag) break;
         /* Verifica se è stato raggiunto il numero massimo di client. */
         if ((cli_count + 1) == MAX_CLIENTS) {
             printf("Raggiunto il numero massimo di client. Rifiutato: ");
