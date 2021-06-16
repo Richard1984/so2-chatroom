@@ -23,7 +23,7 @@
  * sig_atomic_t: tipo intero da usare in un signal handler
  */
 volatile sig_atomic_t flag = 0;
-static _Atomic unsigned int cli_count = 0;
+static _Atomic unsigned int cli_count = 0;  // Variabile atomica
 static int uid = 10;
 static int mode = 0;  // 0: timestamp di ricezione, 1: timestamp di invio
 int listenfd = 0;
