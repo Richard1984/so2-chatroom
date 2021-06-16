@@ -174,13 +174,13 @@ void *handle_send_message(void *arg) {
             send_message("close", -1);  // Se la flag è setta manda un messaggio close
             break;                      // Se la flag è settata esce dal loop
         }
-        pthread_mutex_lock(&messages_mutex);                                       // Acquisisce la lock
-        if (!isEmpty(&messages)) {                                                 // Se la coda è vuota non fa nulla
-            memset(message, 0, sizeof(BUFFER_SZ + NICKNAME_LENGTH + 3));           // Pulisce il buffer (imposta tutto a zero)
-            sprintf(message, "%s: %s\n", messages->user_name, messages->message);  // Formatta il messaggio in: nickname: messaggio\n
-            send_message(message, messages->uid);                                  // Inoltra il messaggio a tutti i client tranne che al mittente
-            fprintf(log_fp, "%s: %s\n", messages->user_name, messages->message);   // Salva il messaggio nel log
-            pop(&messages);                                                        // Rimuove il messaggio dalla coda
+        pthread_mutex_lock(&messages_mutex);                                                                // Acquisisce la lock
+        if (!isEmpty(&messages)) {                                                                          // Se la coda è vuota non fa nulla
+            memset(message, 0, sizeof(BUFFER_SZ + NICKNAME_LENGTH + 3));                                    // Pulisce il buffer (imposta tutto a zero)
+            sprintf(message, "%s: %s\n", messages->user_name, messages->message);                           // Formatta il messaggio in: nickname: messaggio\n
+            send_message(message, messages->uid);                                                           // Inoltra il messaggio a tutti i client tranne che al mittente
+            fprintf(log_fp, "[%ld] %s: %s\n", messages->priority, messages->user_name, messages->message);  // Salva il messaggio nel log
+            pop(&messages);                                                                                 // Rimuove il messaggio dalla coda
         }
         pthread_mutex_unlock(&messages_mutex);  // Rilascia la lock
 
